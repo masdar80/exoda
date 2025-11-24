@@ -3,11 +3,11 @@ import '../services/file_manager_service.dart';
 import '../services/database_service.dart';
 import 'file_selector_screen.dart';
 import 'home_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:exoda/l10n/app_localizations.dart';
 
 class StartupScreen extends StatefulWidget {
   final Function(Locale)? onLanguageChange;
-  
+
   const StartupScreen({super.key, this.onLanguageChange});
 
   @override
@@ -30,13 +30,13 @@ class _StartupScreenState extends State<StartupScreen> {
     try {
       // تحقق من وجود ملفات
       final files = await _fileManager.getAllFiles();
-      
+
       if (files.isNotEmpty) {
         setState(() {
           _hasFiles = true;
           _isLoading = false;
         });
-        
+
         // عرض شاشة اختيار الملفات
         await _showFileSelector();
       } else {
@@ -71,7 +71,6 @@ class _StartupScreenState extends State<StartupScreen> {
   }
 
   Future<void> _createFirstFile() async {
-    final tr = AppLocalizations.of(context)!;
     final result = await showDialog<Map<String, String?>>(
       context: context,
       barrierDismissible: false,
@@ -94,7 +93,7 @@ class _StartupScreenState extends State<StartupScreen> {
 
       try {
         setState(() => _isLoading = true);
-        
+
         final fileInfo = await _fileManager.createNewFile(
           result['name']!,
           password: result['password'],
@@ -102,19 +101,18 @@ class _StartupScreenState extends State<StartupScreen> {
 
         // تعيين كملف افتراضي
         await _fileManager.setDefaultFile(fileInfo.id!);
-        
+
         // إنشاء قاعدة بيانات جديدة للملف
         await _databaseService.switchToFile(fileInfo.fileName);
-        
+
         // التأكد من إغلاق حالة التحميل قبل التنقل
         setState(() => _isLoading = false);
-        
+
         // الانتقال للشاشة الرئيسية مع تأخير صغير
         await Future.delayed(const Duration(milliseconds: 100));
         if (mounted) {
           _navigateToHome(fileInfo.fileName);
         }
-        
       } catch (e) {
         setState(() => _isLoading = false);
         if (mounted) {
@@ -131,9 +129,9 @@ class _StartupScreenState extends State<StartupScreen> {
 
   void _navigateToHome(String fileName) {
     if (!mounted) return;
-    
+
     print('التنقل إلى الشاشة الرئيسية مع الملف: $fileName');
-    
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -275,8 +273,11 @@ class _CreateFirstFileDialogState extends State<_CreateFirstFileDialog> {
                   labelText: tr.password,
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(_obscurePassword
+                        ? Icons.visibility
+                        : Icons.visibility_off),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
               ),
@@ -288,8 +289,11 @@ class _CreateFirstFileDialogState extends State<_CreateFirstFileDialog> {
                   labelText: tr.confirmPassword,
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                    icon: Icon(_obscureConfirmPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off),
+                    onPressed: () => setState(() =>
+                        _obscureConfirmPassword = !_obscureConfirmPassword),
                   ),
                 ),
               ),
@@ -312,7 +316,8 @@ class _CreateFirstFileDialogState extends State<_CreateFirstFileDialog> {
               }
 
               if (_passwordController.text != _confirmPasswordController.text) {
-                Navigator.of(context).pop({'error': 'كلمات المرور غير متطابقة'});
+                Navigator.of(context)
+                    .pop({'error': 'كلمات المرور غير متطابقة'});
                 return;
               }
             }
@@ -332,4 +337,4 @@ class _CreateFirstFileDialogState extends State<_CreateFirstFileDialog> {
       ],
     );
   }
-} 
+}

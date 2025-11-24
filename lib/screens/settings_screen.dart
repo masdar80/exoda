@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:exoda/l10n/app_localizations.dart';
 import '../services/database_service.dart';
 import '../services/file_manager_service.dart';
 import '../models/entity.dart';
@@ -194,12 +194,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.delete_forever, color: Colors.red),
-              title: Text(_currentLanguage == 'ar' 
-                ? 'إعادة تصفير قاعدة البيانات'
-                : 'Reset Database'),
-              subtitle: Text(_currentLanguage == 'ar' 
-                ? 'حذف جميع البيانات والإعدادات من الملف الحالي'
-                : 'Delete all data and settings from current file'),
+              title: Text(_currentLanguage == 'ar'
+                  ? 'إعادة تصفير قاعدة البيانات'
+                  : 'Reset Database'),
+              subtitle: Text(_currentLanguage == 'ar'
+                  ? 'حذف جميع البيانات والإعدادات من الملف الحالي'
+                  : 'Delete all data and settings from current file'),
               onTap: _confirmResetDatabase,
             ),
           ],
@@ -284,7 +284,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // تم اختيار ملف جديد، إعادة تحميل البيانات
       await _databaseService.switchToFile(result);
       widget.onDataChanged?.call();
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('تم التبديل إلى الملف بنجاح'),
@@ -309,7 +309,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         // التبديل إلى الملف الجديد
         await _databaseService.switchToFile(fileInfo.fileName);
-        
+
         widget.onDataChanged?.call();
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -331,13 +331,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _changeLanguage(String languageCode) async {
     await _databaseService.setSetting('language', languageCode);
-    
+
     setState(() {
       _currentLanguage = languageCode;
     });
-    
+
     widget.onLanguageChange(Locale(languageCode));
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('تم تغيير اللغة'),
@@ -366,49 +366,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
       );
-      
+
       final tempPath = await _databaseService.exportTransactionsToExcel();
       Navigator.pop(context);
-      
+
       // اختيار المسار النهائي للحفظ
       final saveResult = await FilePicker.platform.saveFile(
-        dialogTitle: _currentLanguage == 'ar' 
-          ? 'اختر مكان حفظ ملف Excel'
-          : 'Choose location to save Excel file',
+        dialogTitle: _currentLanguage == 'ar'
+            ? 'اختر مكان حفظ ملف Excel'
+            : 'Choose location to save Excel file',
         fileName: tempPath.split('/').last,
         type: FileType.custom,
         allowedExtensions: ['xlsx'],
       );
-      
+
       if (saveResult != null) {
         final tempFile = File(tempPath);
         final destFile = File(saveResult);
         await destFile.writeAsBytes(await tempFile.readAsBytes());
-        
+
         // إظهار رسالة النجاح
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              _currentLanguage == 'ar' 
+            content: Text(_currentLanguage == 'ar'
                 ? 'تم تصدير الملف بنجاح إلى: $saveResult'
-                : 'File exported successfully to: $saveResult'
-            ),
+                : 'File exported successfully to: $saveResult'),
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // إظهار خيار المشاركة
-        _showShareDialog(saveResult, _currentLanguage == 'ar' 
-          ? 'ملف Excel للمعاملات' 
-          : 'Excel Transactions File');
+        _showShareDialog(
+            saveResult,
+            _currentLanguage == 'ar'
+                ? 'ملف Excel للمعاملات'
+                : 'Excel Transactions File');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              _currentLanguage == 'ar' 
-                ? 'تم إلغاء الحفظ'
-                : 'Save cancelled'
-            ),
+                _currentLanguage == 'ar' ? 'تم إلغاء الحفظ' : 'Save cancelled'),
           ),
         );
       }
@@ -416,11 +413,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            _currentLanguage == 'ar' 
+          content: Text(_currentLanguage == 'ar'
               ? 'حدث خطأ في تصدير Excel: $e'
-              : 'Error exporting Excel: $e'
-          ),
+              : 'Error exporting Excel: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -430,7 +425,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _showDatabaseDiagnostics() async {
     try {
       final diagnostics = await _databaseService.getDatabaseDiagnostics();
-      
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -442,10 +437,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('📊 المعاملات: ${diagnostics['transactions_count'] ?? 'خطأ'}'),
+                  Text(
+                      '📊 المعاملات: ${diagnostics['transactions_count'] ?? 'خطأ'}'),
                   Text('🏢 الجهات: ${diagnostics['entities_count'] ?? 'خطأ'}'),
-                  Text('📂 أنواع المصاريف: ${diagnostics['expense_types_count'] ?? 'خطأ'}'),
-                  Text('💳 طرق الدفع: ${diagnostics['payment_methods_count'] ?? 'خطأ'}'),
+                  Text(
+                      '📂 أنواع المصاريف: ${diagnostics['expense_types_count'] ?? 'خطأ'}'),
+                  Text(
+                      '💳 طرق الدفع: ${diagnostics['payment_methods_count'] ?? 'خطأ'}'),
                 ],
               ),
             ),
@@ -470,7 +468,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _importFromExcel() async {
     try {
-      final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['xlsx']);
+      final result = await FilePicker.platform
+          .pickFiles(type: FileType.custom, allowedExtensions: ['xlsx']);
       if (result == null || result.files.isEmpty) return;
       final filePath = result.files.single.path;
       if (filePath == null) return;
@@ -534,7 +533,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('تم استيراد البيانات بنجاح: $importedCount معاملة')),
+        SnackBar(
+            content: Text('تم استيراد البيانات بنجاح: $importedCount معاملة')),
       );
       widget.onDataChanged?.call();
     } catch (e) {
@@ -568,49 +568,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
       );
-      
+
       final tempPath = await _databaseService.exportDatabaseFile();
       Navigator.pop(context);
-      
+
       // اختيار المسار النهائي للحفظ
       final saveResult = await FilePicker.platform.saveFile(
-        dialogTitle: _currentLanguage == 'ar' 
-          ? 'اختر مكان حفظ قاعدة البيانات'
-          : 'Choose location to save database',
+        dialogTitle: _currentLanguage == 'ar'
+            ? 'اختر مكان حفظ قاعدة البيانات'
+            : 'Choose location to save database',
         fileName: tempPath.split('/').last,
         type: FileType.custom,
         allowedExtensions: ['db'],
       );
-      
+
       if (saveResult != null) {
         final tempFile = File(tempPath);
         final destFile = File(saveResult);
         await destFile.writeAsBytes(await tempFile.readAsBytes());
-        
+
         // إظهار رسالة النجاح
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              _currentLanguage == 'ar' 
+            content: Text(_currentLanguage == 'ar'
                 ? 'تم تصدير قاعدة البيانات بنجاح إلى: $saveResult'
-                : 'Database exported successfully to: $saveResult'
-            ),
+                : 'Database exported successfully to: $saveResult'),
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // إظهار خيار المشاركة
-        _showShareDialog(saveResult, _currentLanguage == 'ar' 
-          ? 'ملف قاعدة بيانات Exoda' 
-          : 'Exoda Database File');
+        _showShareDialog(
+            saveResult,
+            _currentLanguage == 'ar'
+                ? 'ملف قاعدة بيانات Exoda'
+                : 'Exoda Database File');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              _currentLanguage == 'ar' 
-                ? 'تم إلغاء الحفظ'
-                : 'Save cancelled'
-            ),
+                _currentLanguage == 'ar' ? 'تم إلغاء الحفظ' : 'Save cancelled'),
           ),
         );
       }
@@ -618,11 +615,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            _currentLanguage == 'ar' 
+          content: Text(_currentLanguage == 'ar'
               ? 'حدث خطأ في تصدير قاعدة البيانات: $e'
-              : 'Error exporting database: $e'
-          ),
+              : 'Error exporting database: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -634,7 +629,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('تأكيد إعادة التصفير'),
-        content: const Text('هل أنت متأكد أنك تريد حذف جميع البيانات والإعدادات من الملف الحالي؟ لا يمكن التراجع عن هذه العملية!'),
+        content: const Text(
+            'هل أنت متأكد أنك تريد حذف جميع البيانات والإعدادات من الملف الحالي؟ لا يمكن التراجع عن هذه العملية!'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -658,18 +654,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _importDatabaseFile() async {
-    final tr = AppLocalizations.of(context)!;
-    
     // إظهار تحذير قبل الاستيراد
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(_currentLanguage == 'ar' 
-          ? 'تأكيد استيراد قاعدة البيانات'
-          : 'Confirm Database Import'),
-        content: Text(_currentLanguage == 'ar' 
-          ? 'سيتم استبدال قاعدة البيانات الحالية بالملف المختار. هذا الإجراء لا يمكن التراجع عنه.\n\nهل تريد المتابعة؟'
-          : 'The current database will be replaced with the selected file. This action cannot be undone.\n\nDo you want to continue?'),
+        title: Text(_currentLanguage == 'ar'
+            ? 'تأكيد استيراد قاعدة البيانات'
+            : 'Confirm Database Import'),
+        content: Text(_currentLanguage == 'ar'
+            ? 'سيتم استبدال قاعدة البيانات الحالية بالملف المختار. هذا الإجراء لا يمكن التراجع عنه.\n\nهل تريد المتابعة؟'
+            : 'The current database will be replaced with the selected file. This action cannot be undone.\n\nDo you want to continue?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -683,22 +677,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
-    
+
     if (confirmed != true) return;
-    
+
     try {
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom, 
+        type: FileType.custom,
         allowedExtensions: ['db'],
-        dialogTitle: _currentLanguage == 'ar' 
-          ? 'اختر ملف قاعدة البيانات'
-          : 'Select database file',
+        dialogTitle: _currentLanguage == 'ar'
+            ? 'اختر ملف قاعدة البيانات'
+            : 'Select database file',
       );
-      
+
       if (result == null || result.files.isEmpty) return;
       final filePath = result.files.single.path;
       if (filePath == null) return;
-      
+
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -709,29 +703,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
               Text(
-                _currentLanguage == 'ar' 
-                  ? 'جاري استيراد قاعدة البيانات...'
-                  : 'Importing database...',
+                _currentLanguage == 'ar'
+                    ? 'جاري استيراد قاعدة البيانات...'
+                    : 'Importing database...',
                 style: const TextStyle(color: Colors.white),
               ),
             ],
           ),
         ),
       );
-      
+
       // انسخ الملف المختار إلى مكان قاعدة البيانات الحالية
       final dbPath = await _databaseService.getDatabasePath();
       final selectedFile = File(filePath);
       final destFile = File(dbPath);
-      await destFile.writeAsBytes(await selectedFile.readAsBytes(), flush: true);
+      await destFile.writeAsBytes(await selectedFile.readAsBytes(),
+          flush: true);
       await _databaseService.initDatabase();
-      
+
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_currentLanguage == 'ar' 
-            ? 'تم استيراد قاعدة البيانات بنجاح!'
-            : 'Database imported successfully!'),
+          content: Text(_currentLanguage == 'ar'
+              ? 'تم استيراد قاعدة البيانات بنجاح!'
+              : 'Database imported successfully!'),
           backgroundColor: Colors.green,
         ),
       );
@@ -740,9 +735,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_currentLanguage == 'ar' 
-            ? 'حدث خطأ في استيراد قاعدة البيانات: $e'
-            : 'Error importing database: $e'),
+          content: Text(_currentLanguage == 'ar'
+              ? 'حدث خطأ في استيراد قاعدة البيانات: $e'
+              : 'Error importing database: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -754,12 +749,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(_currentLanguage == 'ar' 
-          ? 'مشاركة الملف'
-          : 'Share File'),
-        content: Text(_currentLanguage == 'ar' 
-          ? 'هل تريد مشاركة الملف الآن؟'
-          : 'Do you want to share the file now?'),
+        title: Text(_currentLanguage == 'ar' ? 'مشاركة الملف' : 'Share File'),
+        content: Text(_currentLanguage == 'ar'
+            ? 'هل تريد مشاركة الملف الآن؟'
+            : 'Do you want to share the file now?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -773,9 +766,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(_currentLanguage == 'ar' 
-                      ? 'حدث خطأ في المشاركة: $e'
-                      : 'Error sharing: $e'),
+                    content: Text(_currentLanguage == 'ar'
+                        ? 'حدث خطأ في المشاركة: $e'
+                        : 'Error sharing: $e'),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -794,18 +787,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => EntitiesManagementScreen(),
-      ),
-    );
-  }
-
-  void _showTypesDialog() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => _TypesManagementScreen(
-          databaseService: _databaseService,
-          onDataChanged: widget.onDataChanged,
-        ),
       ),
     );
   }
@@ -891,8 +872,11 @@ class _CreateNewFileDialogState extends State<_CreateNewFileDialog> {
                   labelText: 'كلمة المرور',
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(_obscurePassword
+                        ? Icons.visibility
+                        : Icons.visibility_off),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
               ),
@@ -904,8 +888,11 @@ class _CreateNewFileDialogState extends State<_CreateNewFileDialog> {
                   labelText: 'تأكيد كلمة المرور',
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                    icon: Icon(_obscureConfirmPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off),
+                    onPressed: () => setState(() =>
+                        _obscureConfirmPassword = !_obscureConfirmPassword),
                   ),
                 ),
               ),
@@ -959,7 +946,8 @@ class _CreateNewFileDialogState extends State<_CreateNewFileDialog> {
 // شاشة إدارة الجهات
 class EntitiesManagementScreen extends StatefulWidget {
   @override
-  State<EntitiesManagementScreen> createState() => _EntitiesManagementScreenState();
+  State<EntitiesManagementScreen> createState() =>
+      _EntitiesManagementScreenState();
 }
 
 class _EntitiesManagementScreenState extends State<EntitiesManagementScreen> {
@@ -1017,13 +1005,18 @@ class _EntitiesManagementScreenState extends State<EntitiesManagementScreen> {
                 DropdownButton<String>(
                   value: parent,
                   hint: Text('اختر الجهة الرئيسية'),
-                  items: _entities.where((e) => e.type == type && e.isSubcategory == false).map((e) => DropdownMenuItem(value: e.name, child: Text(e.name))).toList(),
+                  items: _entities
+                      .where((e) => e.type == type && e.isSubcategory == false)
+                      .map((e) =>
+                          DropdownMenuItem(value: e.name, child: Text(e.name)))
+                      .toList(),
                   onChanged: (v) => setStateDialog(() => parent = v),
                 ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: Text('إلغاء')),
+            TextButton(
+                onPressed: () => Navigator.pop(context), child: Text('إلغاء')),
             ElevatedButton(
               onPressed: () async {
                 if (nameController.text.trim().isEmpty) return;
@@ -1055,11 +1048,13 @@ class _EntitiesManagementScreenState extends State<EntitiesManagementScreen> {
           decoration: InputDecoration(labelText: 'اسم الجهة'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('إلغاء')),
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: Text('إلغاء')),
           ElevatedButton(
             onPressed: () async {
               if (nameController.text.trim().isEmpty) return;
-              await _databaseService.insertEntity(entity.copyWith(name: nameController.text.trim()));
+              await _databaseService.insertEntity(
+                  entity.copyWith(name: nameController.text.trim()));
               Navigator.pop(context);
               _loadEntities();
             },
@@ -1077,7 +1072,8 @@ class _EntitiesManagementScreenState extends State<EntitiesManagementScreen> {
         title: Text('تأكيد الحذف'),
         content: Text('هل أنت متأكد من حذف الجهة "${entity.name}"؟'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('إلغاء')),
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: Text('إلغاء')),
           ElevatedButton(
             onPressed: () async {
               await _databaseService.deleteEntity(entity.id!);
@@ -1098,7 +1094,10 @@ class _EntitiesManagementScreenState extends State<EntitiesManagementScreen> {
       appBar: AppBar(
         title: Text('إدارة الجهات'),
         actions: [
-          IconButton(icon: Icon(Icons.add), onPressed: _showAddEntityDialog, tooltip: 'إضافة جهة'),
+          IconButton(
+              icon: Icon(Icons.add),
+              onPressed: _showAddEntityDialog,
+              tooltip: 'إضافة جهة'),
         ],
       ),
       body: _isLoading
@@ -1109,12 +1108,20 @@ class _EntitiesManagementScreenState extends State<EntitiesManagementScreen> {
                 final entity = _entities[index];
                 return ListTile(
                   title: Text(entity.name),
-                  subtitle: entity.isSubcategory && entity.parentId != null ? Text('فرعي من: ${entity.parentId}') : null,
+                  subtitle: entity.isSubcategory && entity.parentId != null
+                      ? Text('فرعي من: ${entity.parentId}')
+                      : null,
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(icon: Icon(Icons.edit, color: Colors.blue), onPressed: () => _showEditEntityDialog(entity), tooltip: 'تعديل'),
-                      IconButton(icon: Icon(Icons.delete, color: Colors.red), onPressed: () => _confirmDeleteEntity(entity), tooltip: 'حذف'),
+                      IconButton(
+                          icon: Icon(Icons.edit, color: Colors.blue),
+                          onPressed: () => _showEditEntityDialog(entity),
+                          tooltip: 'تعديل'),
+                      IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _confirmDeleteEntity(entity),
+                          tooltip: 'حذف'),
                     ],
                   ),
                 );
@@ -1127,11 +1134,9 @@ class _EntitiesManagementScreenState extends State<EntitiesManagementScreen> {
 // شاشة إدارة الأنواع
 class _TypesManagementScreen extends StatefulWidget {
   final DatabaseService databaseService;
-  final VoidCallback? onDataChanged;
 
   const _TypesManagementScreen({
     required this.databaseService,
-    this.onDataChanged,
   });
 
   @override
@@ -1226,7 +1231,6 @@ class _TypesManagementScreenState extends State<_TypesManagementScreen> {
               try {
                 await widget.databaseService.deleteExpenseType(type.id!);
                 _loadTypes();
-                widget.onDataChanged?.call();
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('خطأ في حذف النوع: $e')),
@@ -1244,10 +1248,12 @@ class _TypesManagementScreenState extends State<_TypesManagementScreen> {
 // شاشة إدارة طرق الدفع
 class PaymentMethodsManagementScreen extends StatefulWidget {
   @override
-  State<PaymentMethodsManagementScreen> createState() => _PaymentMethodsManagementScreenState();
+  State<PaymentMethodsManagementScreen> createState() =>
+      _PaymentMethodsManagementScreenState();
 }
 
-class _PaymentMethodsManagementScreenState extends State<PaymentMethodsManagementScreen> {
+class _PaymentMethodsManagementScreenState
+    extends State<PaymentMethodsManagementScreen> {
   final DatabaseService _databaseService = DatabaseService();
   List<String> _methods = [];
   bool _isLoading = true;
@@ -1278,11 +1284,13 @@ class _PaymentMethodsManagementScreenState extends State<PaymentMethodsManagemen
           decoration: InputDecoration(labelText: 'اسم الطريقة'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('إلغاء')),
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: Text('إلغاء')),
           ElevatedButton(
             onPressed: () async {
               if (controller.text.trim().isEmpty) return;
-              await _databaseService.insertPaymentMethod(controller.text.trim());
+              await _databaseService
+                  .insertPaymentMethod(controller.text.trim());
               Navigator.pop(context);
               _loadMethods();
             },
@@ -1304,12 +1312,14 @@ class _PaymentMethodsManagementScreenState extends State<PaymentMethodsManagemen
           decoration: InputDecoration(labelText: 'اسم الطريقة'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('إلغاء')),
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: Text('إلغاء')),
           ElevatedButton(
             onPressed: () async {
               if (controller.text.trim().isEmpty) return;
               await _databaseService.deletePaymentMethod(method);
-              await _databaseService.insertPaymentMethod(controller.text.trim());
+              await _databaseService
+                  .insertPaymentMethod(controller.text.trim());
               Navigator.pop(context);
               _loadMethods();
             },
@@ -1327,7 +1337,8 @@ class _PaymentMethodsManagementScreenState extends State<PaymentMethodsManagemen
         title: Text('تأكيد الحذف'),
         content: Text('هل أنت متأكد من حذف طريقة الدفع "$method"؟'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('إلغاء')),
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: Text('إلغاء')),
           ElevatedButton(
             onPressed: () async {
               await _databaseService.deletePaymentMethod(method);
@@ -1348,7 +1359,10 @@ class _PaymentMethodsManagementScreenState extends State<PaymentMethodsManagemen
       appBar: AppBar(
         title: Text('إدارة طرق الدفع'),
         actions: [
-          IconButton(icon: Icon(Icons.add), onPressed: _showAddMethodDialog, tooltip: 'إضافة طريقة'),
+          IconButton(
+              icon: Icon(Icons.add),
+              onPressed: _showAddMethodDialog,
+              tooltip: 'إضافة طريقة'),
         ],
       ),
       body: _isLoading
@@ -1362,8 +1376,14 @@ class _PaymentMethodsManagementScreenState extends State<PaymentMethodsManagemen
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(icon: Icon(Icons.edit, color: Colors.blue), onPressed: () => _showEditMethodDialog(method), tooltip: 'تعديل'),
-                      IconButton(icon: Icon(Icons.delete, color: Colors.red), onPressed: () => _confirmDeleteMethod(method), tooltip: 'حذف'),
+                      IconButton(
+                          icon: Icon(Icons.edit, color: Colors.blue),
+                          onPressed: () => _showEditMethodDialog(method),
+                          tooltip: 'تعديل'),
+                      IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _confirmDeleteMethod(method),
+                          tooltip: 'حذف'),
                     ],
                   ),
                 );
@@ -1375,10 +1395,12 @@ class _PaymentMethodsManagementScreenState extends State<PaymentMethodsManagemen
 
 class ExpenseTypesManagementScreen extends StatefulWidget {
   @override
-  State<ExpenseTypesManagementScreen> createState() => _ExpenseTypesManagementScreenState();
+  State<ExpenseTypesManagementScreen> createState() =>
+      _ExpenseTypesManagementScreenState();
 }
 
-class _ExpenseTypesManagementScreenState extends State<ExpenseTypesManagementScreen> {
+class _ExpenseTypesManagementScreenState
+    extends State<ExpenseTypesManagementScreen> {
   final DatabaseService _databaseService = DatabaseService();
   List<ExpenseType> _types = [];
   bool _isLoading = true;
@@ -1416,7 +1438,8 @@ class _ExpenseTypesManagementScreenState extends State<ExpenseTypesManagementScr
           ElevatedButton(
             onPressed: () async {
               if (controller.text.trim().isEmpty) return;
-              await _databaseService.insertExpenseType(ExpenseType(name: controller.text.trim()));
+              await _databaseService
+                  .insertExpenseType(ExpenseType(name: controller.text.trim()));
               Navigator.pop(context);
               _loadTypes();
             },
@@ -1445,7 +1468,8 @@ class _ExpenseTypesManagementScreenState extends State<ExpenseTypesManagementScr
           ElevatedButton(
             onPressed: () async {
               if (controller.text.trim().isEmpty) return;
-              await _databaseService.updateExpenseType(type.copyWith(name: controller.text.trim()));
+              await _databaseService.updateExpenseType(
+                  type.copyWith(name: controller.text.trim()));
               Navigator.pop(context);
               _loadTypes();
             },
@@ -1522,4 +1546,4 @@ class _ExpenseTypesManagementScreenState extends State<ExpenseTypesManagementScr
             ),
     );
   }
-} 
+}

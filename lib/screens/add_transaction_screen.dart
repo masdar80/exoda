@@ -4,7 +4,7 @@ import '../services/database_service.dart';
 import '../models/transaction.dart' as model;
 import '../models/entity.dart';
 import '../models/expense_type.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:exoda/l10n/app_localizations.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   final VoidCallback onTransactionAdded;
@@ -30,7 +30,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String? _selectedSubcategory;
   String? _selectedType;
   DateTime _selectedDate = DateTime.now();
-  
+
   List<Entity> _entities = [];
   List<Entity> _subcategories = [];
   List<ExpenseType> _types = [];
@@ -66,7 +66,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
   }
 
-  Future<void> _loadSubcategories(AppLocalizations tr, String parentEntity) async {
+  Future<void> _loadSubcategories(
+      AppLocalizations tr, String parentEntity) async {
     final subcategories = await _databaseService.getSubcategories(parentEntity);
     setState(() {
       _subcategories = subcategories;
@@ -146,9 +147,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -213,9 +212,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -276,9 +273,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -339,9 +334,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -382,9 +375,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -411,9 +402,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -436,7 +425,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   suffixIcon: Icon(Icons.calendar_today),
                                 ),
                                 child: Text(
-                                  DateFormat('dd/MM/yyyy - HH:mm').format(_selectedDate),
+                                  DateFormat('dd/MM/yyyy - HH:mm')
+                                      .format(_selectedDate),
                                 ),
                               ),
                             ),
@@ -444,9 +434,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
                     ElevatedButton(
                       onPressed: _saveTransaction,
                       style: ElevatedButton.styleFrom(
@@ -469,7 +457,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   void _showAddEntityDialog() {
     final tr = AppLocalizations.of(context)!;
     final controller = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -490,7 +478,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             onPressed: () async {
               if (controller.text.trim().isNotEmpty) {
                 await _databaseService.insertEntity(
-                  Entity(name: controller.text.trim(), type: _direction, isSubcategory: false),
+                  Entity(
+                      name: controller.text.trim(),
+                      type: _direction,
+                      isSubcategory: false),
                 );
                 Navigator.pop(context);
                 await _loadData();
@@ -509,7 +500,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   void _showAddTypeDialog() {
     final tr = AppLocalizations.of(context)!;
     final controller = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -549,7 +540,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   void _showAddPaymentMethodDialog() {
     final tr = AppLocalizations.of(context)!;
     final controller = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -569,7 +560,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ElevatedButton(
             onPressed: () async {
               if (controller.text.trim().isNotEmpty) {
-                await _databaseService.insertPaymentMethod(controller.text.trim());
+                await _databaseService
+                    .insertPaymentMethod(controller.text.trim());
                 Navigator.pop(context);
                 await _loadData();
                 setState(() {
@@ -644,7 +636,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           subcategory: _selectedSubcategory ?? _selectedEntity!,
           date: _selectedDate,
           type: _selectedType!,
-          notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+          notes:
+              _notesController.text.isNotEmpty ? _notesController.text : null,
         );
 
         await _databaseService.insertTransaction(transaction);
@@ -657,7 +650,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         );
 
         widget.onTransactionAdded();
-        
+
         // Reset form
         _amountController.clear();
         setState(() {
@@ -684,4 +677,4 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     _notesController.dispose();
     super.dispose();
   }
-} 
+}

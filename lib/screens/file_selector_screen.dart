@@ -4,7 +4,7 @@ import '../services/file_manager_service.dart';
 import '../services/database_service.dart';
 import '../models/file_info.dart';
 import 'home_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:exoda/l10n/app_localizations.dart';
 
 class FileSelectorScreen extends StatefulWidget {
   final Function(String fileName) onFileSelected;
@@ -58,7 +58,7 @@ class _FileSelectorScreenState extends State<FileSelectorScreen> {
 
   Future<void> _selectFile(FileInfo fileInfo) async {
     print('🎯 بدء اختيار الملف: ${fileInfo.name} (${fileInfo.fileName})');
-    
+
     if (fileInfo.hasPassword) {
       print('🔒 الملف محمي بكلمة مرور، طلب كلمة المرور...');
       final password = await _showPasswordDialog();
@@ -70,7 +70,7 @@ class _FileSelectorScreenState extends State<FileSelectorScreen> {
       print('🔑 التحقق من كلمة المرور...');
       final isValid = await _fileManager.verifyPassword(fileInfo.id!, password);
       if (!mounted) return;
-      
+
       if (!isValid) {
         print('❌ كلمة المرور غير صحيحة');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -86,13 +86,13 @@ class _FileSelectorScreenState extends State<FileSelectorScreen> {
 
     print('⏰ تحديث وقت الوصول...');
     await _fileManager.updateLastAccessed(fileInfo.id!);
-    
+
     print('📁 تعيين الملف كحالي...');
     _fileManager.setCurrentFile(fileInfo.fileName);
-    
+
     print('🔄 تبديل قاعدة البيانات...');
     await _databaseService.switchToFile(fileInfo.fileName);
-    
+
     // التأكد من أن الـ widget ما زال موجود قبل التنقل
     if (mounted) {
       print('🚀 التنقل المباشر للشاشة الرئيسية...');
@@ -139,7 +139,7 @@ class _FileSelectorScreenState extends State<FileSelectorScreen> {
 
   Future<void> _createNewFile() async {
     print('🆕 بدء إنشاء ملف جديد...');
-    
+
     final result = await showDialog<Map<String, String?>>(
       context: context,
       builder: (context) => _CreateFileDialog(),
@@ -149,18 +149,18 @@ class _FileSelectorScreenState extends State<FileSelectorScreen> {
       try {
         print('📝 إنشاء ملف بالاسم: ${result['name']}');
         print('🔒 محمي بكلمة مرور: ${result['password'] != null}');
-        
+
         final fileInfo = await _fileManager.createNewFile(
           result['name']!,
           password: result['password'],
         );
-        
+
         print('✅ تم إنشاء الملف: ${fileInfo.name} (${fileInfo.fileName})');
 
         // إنشاء قاعدة بيانات جديدة للملف
         print('🔄 تبديل قاعدة البيانات للملف الجديد...');
         await _databaseService.switchToFile(fileInfo.fileName);
-        
+
         // تحديد هذا الملف كافتراضي إذا كان الوحيد
         if (_files.isEmpty) {
           print('⭐ تعيين الملف كافتراضي...');
@@ -181,7 +181,6 @@ class _FileSelectorScreenState extends State<FileSelectorScreen> {
         } else {
           print('❌ Widget غير متاح، لا يمكن الانتقال');
         }
-        
       } catch (e) {
         print('❌ خطأ في إنشاء الملف: $e');
         if (mounted) {
@@ -205,7 +204,8 @@ class _FileSelectorScreenState extends State<FileSelectorScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('تأكيد الحذف'),
-        content: Text('هل تريد حذف الملف "${fileInfo.name}"؟\nستفقد جميع البيانات الموجودة فيه نهائياً.'),
+        content: Text(
+            'هل تريد حذف الملف "${fileInfo.name}"؟\nستفقد جميع البيانات الموجودة فيه نهائياً.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -280,7 +280,8 @@ class _FileSelectorScreenState extends State<FileSelectorScreen> {
                           child: Text(
                             tr.noFiles,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 16, color: Colors.grey),
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.grey),
                           ),
                         )
                       : ListView.builder(
@@ -288,30 +289,41 @@ class _FileSelectorScreenState extends State<FileSelectorScreen> {
                           itemBuilder: (context, index) {
                             final file = _files[index];
                             return Card(
-                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
                               child: ListTile(
                                 leading: CircleAvatar(
-                                  backgroundColor: file.isDefault ? Colors.green : Colors.blue,
+                                  backgroundColor: file.isDefault
+                                      ? Colors.green
+                                      : Colors.blue,
                                   child: Icon(
-                                    file.hasPassword ? Icons.lock : Icons.folder,
+                                    file.hasPassword
+                                        ? Icons.lock
+                                        : Icons.folder,
                                     color: Colors.white,
                                   ),
                                 ),
                                 title: Text(
                                   file.name,
                                   style: TextStyle(
-                                    fontWeight: file.isDefault ? FontWeight.bold : FontWeight.normal,
+                                    fontWeight: file.isDefault
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
                                   ),
                                 ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('تاريخ الإنشاء: ${DateFormat('dd/MM/yyyy').format(file.createdAt)}'),
-                                    Text('آخر دخول: ${DateFormat('dd/MM/yyyy HH:mm').format(file.lastAccessed)}'),
+                                    Text(
+                                        'تاريخ الإنشاء: ${DateFormat('dd/MM/yyyy').format(file.createdAt)}'),
+                                    Text(
+                                        'آخر دخول: ${DateFormat('dd/MM/yyyy HH:mm').format(file.lastAccessed)}'),
                                     if (file.isDefault)
                                       const Text(
                                         'الملف الافتراضي',
-                                        style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                                        style: TextStyle(
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                   ],
                                 ),
@@ -423,8 +435,11 @@ class _CreateFileDialogState extends State<_CreateFileDialog> {
                   labelText: tr.password,
                   border: OutlineInputBorder(),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(_obscurePassword
+                        ? Icons.visibility
+                        : Icons.visibility_off),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
               ),
@@ -436,8 +451,11 @@ class _CreateFileDialogState extends State<_CreateFileDialog> {
                   labelText: tr.confirmPassword,
                   border: OutlineInputBorder(),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                    icon: Icon(_obscureConfirmPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off),
+                    onPressed: () => setState(() =>
+                        _obscureConfirmPassword = !_obscureConfirmPassword),
                   ),
                 ),
               ),
@@ -486,4 +504,4 @@ class _CreateFileDialogState extends State<_CreateFileDialog> {
       ],
     );
   }
-} 
+}

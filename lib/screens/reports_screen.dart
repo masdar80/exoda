@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/database_service.dart';
 import '../models/transaction.dart' as model;
-import 'edit_transaction_screen.dart';
 import 'advanced_reports_screen.dart';
 import 'yearly_report_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:exoda/l10n/app_localizations.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -23,8 +22,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   // Filter options
   String? _filterDirection;
   String? _filterPaymentMethod;
-  String? _filterEntity;
-  String? _filterType;
+
   DateTime? _fromDate;
   DateTime? _toDate;
   String? _currentFilter;
@@ -69,13 +67,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> _loadTransactions() async {
-    print('📊 بدء تحميل المعاملات في شاشة التقارير...');
     setState(() {
       _isLoading = true;
     });
 
     try {
-      print('📊 جلب المعاملات مع الفلاتر: اتجاه=$_filterDirection، طريقة دفع=$_filterPaymentMethod، من تاريخ=$_fromDate، إلى تاريخ=$_toDate');
       final transactions = await _databaseService.getTransactions(
         direction: _filterDirection,
         paymentMethod: _filterPaymentMethod,
@@ -83,20 +79,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
         endDate: _toDate,
       );
 
-      print('📊 تم جلب ${transactions.length} معاملة');
-      for (int i = 0; i < (transactions.length > 5 ? 5 : transactions.length); i++) {
-        final tx = transactions[i];
-        print('📊 معاملة $i: ${tx.direction} - ${tx.entity} - ${tx.amount} - ${tx.paymentMethod} - ملاحظات: ${tx.notes ?? "لا توجد"}');
-      }
-
       setState(() {
         _transactions = transactions;
         _isLoading = false;
       });
-      
-      print('📊 انتهاء تحميل المعاملات بنجاح');
     } catch (e) {
-      print('📊 خطأ في تحميل المعاملات: $e');
       setState(() {
         _isLoading = false;
       });
@@ -106,7 +93,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   Widget build(BuildContext context) {
     final tr = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(tr.reportsTitle),
@@ -168,7 +155,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             padding: const EdgeInsets.all(16),
                             child: Column(
                               children: [
-                                Icon(Icons.arrow_upward, color: Colors.red, size: 30),
+                                Icon(Icons.arrow_upward,
+                                    color: Colors.red, size: 30),
                                 const SizedBox(height: 8),
                                 Text(
                                   tr.payments,
@@ -199,7 +187,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             padding: const EdgeInsets.all(16),
                             child: Column(
                               children: [
-                                Icon(Icons.arrow_downward, color: Colors.green, size: 30),
+                                Icon(Icons.arrow_downward,
+                                    color: Colors.green, size: 30),
                                 const SizedBox(height: 8),
                                 Text(
                                   tr.receipts,
@@ -230,7 +219,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             padding: const EdgeInsets.all(16),
                             child: Column(
                               children: [
-                                Icon(Icons.account_balance, color: Colors.blue, size: 30),
+                                Icon(Icons.account_balance,
+                                    color: Colors.blue, size: 30),
                                 const SizedBox(height: 8),
                                 Text(
                                   tr.net,
@@ -327,7 +317,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildTransactionItem(model.Transaction transaction, AppLocalizations tr) {
+  Widget _buildTransactionItem(
+      model.Transaction transaction, AppLocalizations tr) {
     final isPayment = transaction.direction == 'payment';
     final color = isPayment ? Colors.red : Colors.green;
     final icon = isPayment ? Icons.arrow_upward : Icons.arrow_downward;
@@ -369,7 +360,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   void _showFilterDialog() {
     final tr = AppLocalizations.of(context)!;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -431,44 +422,4 @@ class _ReportsScreenState extends State<ReportsScreen> {
       ),
     );
   }
-
-  Future<void> _selectFromDate() async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _fromDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-    );
-    if (date != null) {
-      setState(() {
-        _fromDate = date;
-      });
-    }
-  }
-
-  Future<void> _selectToDate() async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _toDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-    );
-    if (date != null) {
-      setState(() {
-        _toDate = date;
-      });
-    }
-  }
-
-  void _editTransaction(model.Transaction transaction) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditTransactionScreen(
-          transaction: transaction,
-          onTransactionUpdated: _loadTransactions,
-        ),
-      ),
-    );
-  }
-} 
+}

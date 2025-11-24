@@ -4,7 +4,7 @@ import '../services/database_service.dart';
 import '../models/transaction.dart' as model;
 import '../models/entity.dart';
 import '../models/expense_type.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:exoda/l10n/app_localizations.dart';
 
 class EditTransactionScreen extends StatefulWidget {
   final model.Transaction transaction;
@@ -32,7 +32,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
   String? _selectedSubcategory;
   String? _selectedType;
   DateTime _selectedDate = DateTime.now();
-  
+
   List<Entity> _entities = [];
   List<Entity> _subcategories = [];
   List<ExpenseType> _types = [];
@@ -171,9 +171,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -221,9 +219,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -266,9 +262,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -311,9 +305,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -354,9 +346,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -383,9 +373,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -408,7 +396,8 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                                   suffixIcon: Icon(Icons.calendar_today),
                                 ),
                                 child: Text(
-                                  DateFormat('dd/MM/yyyy - HH:mm').format(_selectedDate),
+                                  DateFormat('dd/MM/yyyy - HH:mm')
+                                      .format(_selectedDate),
                                 ),
                               ),
                             ),
@@ -416,9 +405,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
                     ElevatedButton(
                       onPressed: _updateTransaction,
                       style: ElevatedButton.styleFrom(
@@ -478,7 +465,8 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
           subcategory: _selectedSubcategory ?? _selectedEntity!,
           date: _selectedDate,
           type: _selectedType!,
-          notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+          notes:
+              _notesController.text.isNotEmpty ? _notesController.text : null,
         );
 
         await _databaseService.updateTransaction(updatedTransaction);
@@ -505,7 +493,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
 
   void _deleteTransaction() {
     final tr = AppLocalizations.of(context)!;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -518,11 +506,14 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              await _databaseService.deleteTransaction(widget.transaction.id!);
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Close edit screen
-              if (widget.onTransactionUpdated != null) {
-                widget.onTransactionUpdated!();
+              if (widget.transaction.id != null) {
+                await _databaseService
+                    .deleteTransaction(widget.transaction.id!);
+              }
+              if (mounted) {
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(context); // Close edit screen
+                widget.onTransactionUpdated();
               }
             },
             style: ElevatedButton.styleFrom(
@@ -542,4 +533,4 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
     _notesController.dispose();
     super.dispose();
   }
-} 
+}

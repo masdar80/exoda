@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/database_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
+import 'package:exoda/l10n/app_localizations.dart';
 import '../models/entity.dart';
 
 class AdvancedReportsScreen extends StatefulWidget {
@@ -16,64 +15,23 @@ class AdvancedReportsScreen extends StatefulWidget {
 class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
   final DatabaseService _databaseService = DatabaseService();
   int _selectedIndex = 0;
-  bool _isLoading = false;
-  
+
   // Date filter variables
-  DateTime? _fromDate;
-  DateTime? _toDate;
-  
-  // Chart filter options
   DateTime? _chartStartDate;
   DateTime? _chartEndDate;
   String _selectedPeriod = 'thisMonth';
-  
-    _loadData();
-  }
-  
-  Future<void> _calculateMonthlyTotals() async {
-    try {
-      // Calculate first month total
-      final firstMonthStart = DateTime(_firstYear, _firstMonth, 1);
-      final firstMonthEnd = DateTime(_firstYear, _firstMonth + 1, 0);
-      
-      final firstMonthTransactions = await _databaseService.getTransactions(
-        direction: 'payment',
-        startDate: firstMonthStart,
-        endDate: firstMonthEnd,
-      );
-      
-      _firstMonthTotal = firstMonthTransactions
-          .fold(0.0, (sum, t) => sum + t.amount);
-      
-      // Calculate second month total
-      final secondMonthStart = DateTime(_secondYear, _secondMonth, 1);
-      final secondMonthEnd = DateTime(_secondYear, _secondMonth + 1, 0);
-      
-      final secondMonthTransactions = await _databaseService.getTransactions(
-        direction: 'payment',
-      initialDate: _fromDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null && picked != _fromDate) {
-      setState(() {
-        _fromDate = picked;
-      });
-    }
-  }
 
-  void _selectToDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _toDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null && picked != _toDate) {
-      setState(() {
-        _toDate = picked;
-      });
-    }
+  // Comparison variables
+  int _firstMonth = DateTime.now().month;
+  int _firstYear = DateTime.now().year;
+  int _secondMonth = DateTime.now().month == 1 ? 12 : DateTime.now().month - 1;
+  int _secondYear =
+      DateTime.now().month == 1 ? DateTime.now().year - 1 : DateTime.now().year;
+
+  @override
+  void initState() {
+    super.initState();
+    _setDateRangeFromPeriod();
   }
 
   void _setDateRangeFromPeriod() {
@@ -99,12 +57,13 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
         // Keep existing dates
         break;
     }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     final tr = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(tr.advancedReportsTitle),
@@ -115,9 +74,7 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
         children: [
           _buildTabBar(tr),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _buildSelectedView(tr),
+            child: _buildSelectedView(tr),
           ),
         ],
       ),
@@ -131,6 +88,17 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
         children: [
           Expanded(
             child: _buildTabButton(tr, tr.pieChart, 0),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildTabButton(tr, tr.monthlyComparison, 1),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton(AppLocalizations tr, String title, int index) {
     final isSelected = _selectedIndex == index;
     return ElevatedButton(
       onPressed: () => setState(() => _selectedIndex = index),
@@ -147,6 +115,16 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
     );
   }
 
+  Widget _buildSelectedView(AppLocalizations tr) {
+    if (_selectedIndex == 0) {
+      return _buildPieChartView(tr);
+    } else {
+      return _buildMonthlyComparison(tr);
+    }
+  }
+
+  Widget _buildPieChartView(AppLocalizations tr) {
+    return Column(
       children: [
         _buildPeriodSelector(tr),
         Expanded(
@@ -156,7 +134,7 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
-              
+
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return Center(
                   child: Text(tr.noDataForPeriod),
@@ -169,7 +147,8 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
                   children: [
                     Text(
                       tr.expensesByCategoryTitle,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     Expanded(
@@ -223,9 +202,9 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
                     child: TextButton(
                       onPressed: () => _selectDate(true),
                       child: Text(
-                        _chartStartDate != null 
-                          ? DateFormat('dd/MM/yyyy').format(_chartStartDate!)
-                          : tr.fromDate,
+                        _chartStartDate != null
+                            ? DateFormat('dd/MM/yyyy').format(_chartStartDate!)
+                            : tr.fromDate,
                       ),
                     ),
                   ),
@@ -234,9 +213,9 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
                     child: TextButton(
                       onPressed: () => _selectDate(false),
                       child: Text(
-                        _chartEndDate != null 
-                          ? DateFormat('dd/MM/yyyy').format(_chartEndDate!)
-                          : tr.toDate,
+                        _chartEndDate != null
+                            ? DateFormat('dd/MM/yyyy').format(_chartEndDate!)
+                            : tr.toDate,
                       ),
                     ),
                   ),
@@ -266,18 +245,26 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
 
   List<PieChartSectionData> _buildPieChartSections(Map<String, double> data) {
     final colors = [
-      Colors.red, Colors.blue, Colors.green, Colors.orange, Colors.purple,
-      Colors.teal, Colors.amber, Colors.pink, Colors.indigo, Colors.cyan,
+      Colors.red,
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      Colors.amber,
+      Colors.pink,
+      Colors.indigo,
+      Colors.cyan,
     ];
-    
+
     int colorIndex = 0;
     final total = data.values.fold(0.0, (sum, value) => sum + value);
-    
+
     return data.entries.map((entry) {
       final percentage = (entry.value / total * 100);
       final color = colors[colorIndex % colors.length];
       colorIndex++;
-      
+
       return PieChartSectionData(
         color: color,
         value: entry.value,
@@ -294,13 +281,21 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
 
   Widget _buildLegend(Map<String, double> data) {
     final colors = [
-      Colors.red, Colors.blue, Colors.green, Colors.orange, Colors.purple,
-      Colors.teal, Colors.amber, Colors.pink, Colors.indigo, Colors.cyan,
+      Colors.red,
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      Colors.amber,
+      Colors.pink,
+      Colors.indigo,
+      Colors.cyan,
     ];
-    
+
     int colorIndex = 0;
     final total = data.values.fold(0.0, (sum, value) => sum + value);
-    
+
     return Wrap(
       spacing: 8,
       runSpacing: 4,
@@ -308,11 +303,11 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
         final color = colors[colorIndex % colors.length];
         colorIndex++;
         final percentage = (entry.value / total * 100);
-        
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: color),
           ),
@@ -350,7 +345,7 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
-              
+
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return Center(
                   child: Text(tr.noDataForComparison),
@@ -394,22 +389,25 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
                                   child: Text(_getMonthName(month)),
                                 ))
                             .toList(),
-                        onChanged: (value) => setState(() => _firstMonth = value!),
+                        onChanged: (value) =>
+                            setState(() => _firstMonth = value!),
                       ),
                       DropdownButton<int>(
                         value: _firstYear,
-                        items: List.generate(5, (index) => DateTime.now().year - index)
+                        items: List.generate(
+                                5, (index) => DateTime.now().year - index)
                             .map((year) => DropdownMenuItem(
                                   value: year,
                                   child: Text(year.toString()),
                                 ))
                             .toList(),
-                        onChanged: (value) => setState(() => _firstYear = value!),
+                        onChanged: (value) =>
+                            setState(() => _firstYear = value!),
                       ),
                     ],
                   ),
                 ),
-                const Text('مقابل'),
+                const Text('vs'),
                 Expanded(
                   child: Column(
                     children: [
@@ -425,17 +423,20 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
                                   child: Text(_getMonthName(month)),
                                 ))
                             .toList(),
-                        onChanged: (value) => setState(() => _secondMonth = value!),
+                        onChanged: (value) =>
+                            setState(() => _secondMonth = value!),
                       ),
                       DropdownButton<int>(
                         value: _secondYear,
-                        items: List.generate(5, (index) => DateTime.now().year - index)
+                        items: List.generate(
+                                5, (index) => DateTime.now().year - index)
                             .map((year) => DropdownMenuItem(
                                   value: year,
                                   child: Text(year.toString()),
                                 ))
                             .toList(),
-                        onChanged: (value) => setState(() => _secondYear = value!),
+                        onChanged: (value) =>
+                            setState(() => _secondYear = value!),
                       ),
                     ],
                   ),
@@ -443,10 +444,19 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildComparisonChart(
+      AppLocalizations tr, Map<String, Map<String, double>> data) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           Text(
-            'مقارنة ${_getMonthName(_firstMonth)} $_firstYear مع ${_getMonthName(_secondMonth)} $_secondYear',
+            '${_getMonthName(_firstMonth)} $_firstYear vs ${_getMonthName(_secondMonth)} $_secondYear',
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
@@ -487,8 +497,10 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
                       },
                     ),
                   ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
                 ),
                 borderData: FlBorderData(show: false),
                 barGroups: _buildBarGroups(data),
@@ -527,11 +539,12 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
     );
   }
 
-  List<BarChartGroupData> _buildBarGroups(Map<String, Map<String, double>> data) {
+  List<BarChartGroupData> _buildBarGroups(
+      Map<String, Map<String, double>> data) {
     return data.entries.map((entry) {
       final categoryIndex = data.keys.toList().indexOf(entry.key);
       final categoryData = entry.value;
-      
+
       return BarChartGroupData(
         x: categoryIndex,
         barRods: [
@@ -563,11 +576,13 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
   Future<void> _selectDate(bool isStartDate) async {
     final date = await showDatePicker(
       context: context,
-      initialDate: isStartDate ? (_chartStartDate ?? DateTime.now()) : (_chartEndDate ?? DateTime.now()),
+      initialDate: isStartDate
+          ? (_chartStartDate ?? DateTime.now())
+          : (_chartEndDate ?? DateTime.now()),
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
     );
-    
+
     if (date != null) {
       setState(() {
         if (isStartDate) {
@@ -587,21 +602,22 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
     );
 
     final Map<String, double> categoryExpenses = {};
-    final parentCategories = await _databaseService.getParentCategories('payment');
-    
+    final parentCategories =
+        await _databaseService.getParentCategories('payment');
+
     for (var transaction in transactions) {
       // Find parent category
       String parentCategory = transaction.entity;
       final parent = parentCategories.firstWhere(
         (cat) => cat.name == transaction.entity,
-        orElse: () => Entity(name: 'آخر', type: 'payment'),
+        orElse: () => Entity(name: 'Other', type: 'payment'),
       );
-      
-      if (parent.name != 'آخر') {
+
+      if (parent.name != 'Other') {
         parentCategory = parent.name;
       }
-      
-      categoryExpenses[parentCategory] = 
+
+      categoryExpenses[parentCategory] =
           (categoryExpenses[parentCategory] ?? 0) + transaction.amount;
     }
 
@@ -629,22 +645,23 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
 
     // Organize by categories
     final Map<String, Map<String, double>> comparison = {};
-    final parentCategories = await _databaseService.getParentCategories('payment');
-    
+    final parentCategories =
+        await _databaseService.getParentCategories('payment');
+
     // Process first month
     for (var transaction in firstMonthTransactions) {
       String parentCategory = transaction.entity;
       final parent = parentCategories.firstWhere(
         (cat) => cat.name == transaction.entity,
-        orElse: () => Entity(name: 'آخر', type: 'payment'),
+        orElse: () => Entity(name: 'Other', type: 'payment'),
       );
-      
-      if (parent.name != 'آخر') {
+
+      if (parent.name != 'Other') {
         parentCategory = parent.name;
       }
-      
+
       comparison[parentCategory] ??= {'first': 0, 'second': 0};
-      comparison[parentCategory]!['first'] = 
+      comparison[parentCategory]!['first'] =
           (comparison[parentCategory]!['first'] ?? 0) + transaction.amount;
     }
 
@@ -653,275 +670,35 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> {
       String parentCategory = transaction.entity;
       final parent = parentCategories.firstWhere(
         (cat) => cat.name == transaction.entity,
-        orElse: () => Entity(name: 'آخر', type: 'payment'),
+        orElse: () => Entity(name: 'Other', type: 'payment'),
       );
-      
-      if (parent.name != 'آخر') {
+
+      if (parent.name != 'Other') {
         parentCategory = parent.name;
       }
-      
+
       comparison[parentCategory] ??= {'first': 0, 'second': 0};
-      comparison[parentCategory]!['second'] = 
-          (comparison[parentCategory]!['second'] ?? 0) + transaction.amount;
-                              style: const TextStyle(fontSize: 10),
-                            ),
-                          );
-                        }
-                        return const Text('');
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(fontSize: 10),
-                        );
-                      },
-                    ),
-                  ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                borderData: FlBorderData(show: false),
-                barGroups: _buildBarGroups(data),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildLegendItem(tr.firstMonthTitle, Colors.blue),
-              const SizedBox(width: 16),
-              _buildLegendItem(tr.secondMonthTitle, Colors.red),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLegendItem(String label, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 12)),
-      ],
-    );
-  }
-
-  List<BarChartGroupData> _buildBarGroups(Map<String, Map<String, double>> data) {
-    return data.entries.map((entry) {
-      final categoryIndex = data.keys.toList().indexOf(entry.key);
-      final categoryData = entry.value;
-      
-      return BarChartGroupData(
-        x: categoryIndex,
-        barRods: [
-          BarChartRodData(
-            toY: categoryData['first'] ?? 0,
-            color: Colors.blue,
-            width: 16,
-          ),
-          BarChartRodData(
-            toY: categoryData['second'] ?? 0,
-            color: Colors.red,
-            width: 16,
-          ),
-        ],
-      );
-    }).toList();
-  }
-
-  double _getMaxValue(Map<String, Map<String, double>> data) {
-    double max = 0;
-    for (var categoryData in data.values) {
-      for (var value in categoryData.values) {
-        if (value > max) max = value;
-      }
-    }
-    return max * 1.2; // Add 20% padding
-  }
-
-  Future<void> _selectDate(bool isStartDate) async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: isStartDate ? (_chartStartDate ?? DateTime.now()) : (_chartEndDate ?? DateTime.now()),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-    );
-    
-    if (date != null) {
-      setState(() {
-        if (isStartDate) {
-          _chartStartDate = date;
-        } else {
-          _chartEndDate = date;
-        }
-      });
-    }
-  }
-
-  Future<Map<String, double>> _getExpensesByCategory() async {
-    final transactions = await _databaseService.getTransactions(
-      direction: 'payment',
-      startDate: _chartStartDate,
-      endDate: _chartEndDate,
-    );
-
-    final Map<String, double> categoryExpenses = {};
-    final parentCategories = await _databaseService.getParentCategories('payment');
-    
-    for (var transaction in transactions) {
-      // Find parent category
-      String parentCategory = transaction.entity;
-      final parent = parentCategories.firstWhere(
-        (cat) => cat.name == transaction.entity,
-        orElse: () => Entity(name: 'آخر', type: 'payment'),
-      );
-      
-      if (parent.name != 'آخر') {
-        parentCategory = parent.name;
-      }
-      
-      categoryExpenses[parentCategory] = 
-          (categoryExpenses[parentCategory] ?? 0) + transaction.amount;
-    }
-
-    return categoryExpenses;
-  }
-
-  Future<Map<String, Map<String, double>>> _getMonthlyComparison() async {
-    // Get transactions for first month
-    final firstMonthStart = DateTime(_firstYear, _firstMonth, 1);
-    final firstMonthEnd = DateTime(_firstYear, _firstMonth + 1, 0);
-    final firstMonthTransactions = await _databaseService.getTransactions(
-      direction: 'payment',
-      startDate: firstMonthStart,
-      endDate: firstMonthEnd,
-    );
-
-    // Get transactions for second month
-    final secondMonthStart = DateTime(_secondYear, _secondMonth, 1);
-    final secondMonthEnd = DateTime(_secondYear, _secondMonth + 1, 0);
-    final secondMonthTransactions = await _databaseService.getTransactions(
-      direction: 'payment',
-      startDate: secondMonthStart,
-      endDate: secondMonthEnd,
-    );
-
-    // Organize by categories
-    final Map<String, Map<String, double>> comparison = {};
-    final parentCategories = await _databaseService.getParentCategories('payment');
-    
-    // Process first month
-    for (var transaction in firstMonthTransactions) {
-      String parentCategory = transaction.entity;
-      final parent = parentCategories.firstWhere(
-        (cat) => cat.name == transaction.entity,
-        orElse: () => Entity(name: 'آخر', type: 'payment'),
-      );
-      
-      if (parent.name != 'آخر') {
-        parentCategory = parent.name;
-      }
-      
-      comparison[parentCategory] ??= {'first': 0, 'second': 0};
-      comparison[parentCategory]!['first'] = 
-          (comparison[parentCategory]!['first'] ?? 0) + transaction.amount;
-    }
-
-    // Process second month
-    for (var transaction in secondMonthTransactions) {
-      String parentCategory = transaction.entity;
-      final parent = parentCategories.firstWhere(
-        (cat) => cat.name == transaction.entity,
-        orElse: () => Entity(name: 'آخر', type: 'payment'),
-      );
-      
-      if (parent.name != 'آخر') {
-        parentCategory = parent.name;
-      }
-      
-      comparison[parentCategory] ??= {'first': 0, 'second': 0};
-      comparison[parentCategory]!['second'] = 
+      comparison[parentCategory]!['second'] =
           (comparison[parentCategory]!['second'] ?? 0) + transaction.amount;
     }
 
     return comparison;
   }
 
-  Widget _buildFamilyInsights(AppLocalizations tr) {
-    return Column(
-      children: [
-        _buildPeriodSelector(tr),
-        Expanded(
-          child: FutureBuilder<Map<String, double>>(
-            future: _getExpensesByType(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(
-                  child: Text(tr.noFamilyData),
-                );
-              }
-
-              return Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Text(
-                      tr.spendingShare,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: PieChart(
-                        PieChartData(
-                          sections: _buildPieChartSections(snapshot.data!),
-                          sectionsSpace: 2,
-                          centerSpaceRadius: 40,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildLegend(snapshot.data!),
-                  ],
-                );
-              }
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Future<Map<String, double>> _getExpensesByType() async {
-    return await _databaseService.getExpensesByType(
-      startDate: _chartStartDate,
-      endDate: _chartEndDate,
-    );
-  }
-
   String _getMonthName(int month) {
     const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
     return months[month - 1];
   }

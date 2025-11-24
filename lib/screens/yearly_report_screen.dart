@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/database_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:exoda/l10n/app_localizations.dart';
 
 class YearlyReportScreen extends StatefulWidget {
   const YearlyReportScreen({super.key});
@@ -45,7 +45,9 @@ class _YearlyReportScreenState extends State<YearlyReportScreen> {
   Widget build(BuildContext context) {
     // Fallback for localization if not available yet (though it should be)
     final tr = AppLocalizations.of(context);
-    final title = tr != null ? 'التقرير السنوي' : 'Yearly Report'; // Manual fallback if key missing
+    final title = tr != null
+        ? 'التقرير السنوي'
+        : 'Yearly Report'; // Manual fallback if key missing
 
     return Scaffold(
       appBar: AppBar(

@@ -6,7 +6,7 @@ import 'add_transaction_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
 import 'edit_transaction_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:exoda/l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(Locale) onLanguageChange;
@@ -38,27 +38,30 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       print('🏠 جلب إجمالي المصاريف الشهرية...');
-      final monthlyExpense = await _databaseService.getTotalExpensesForMonth(DateTime.now());
+      final monthlyExpense =
+          await _databaseService.getTotalExpensesForMonth(DateTime.now());
       print('🏠 إجمالي المصاريف الشهرية: $monthlyExpense');
-      
+
       print('🏠 جلب آخر المعاملات...');
-      final recentTransactions = await _databaseService.getRecentTransactions(limit: 5);
+      final recentTransactions =
+          await _databaseService.getRecentTransactions(limit: 5);
       print('🏠 عدد المعاملات المجلبة: ${recentTransactions.length}');
-      
+
       for (int i = 0; i < recentTransactions.length; i++) {
         final tx = recentTransactions[i];
-        print('🏠 معاملة $i: ${tx.direction} - ${tx.entity} - ${tx.amount} - ${tx.paymentMethod}');
+        print(
+            '🏠 معاملة $i: ${tx.direction} - ${tx.entity} - ${tx.amount} - ${tx.paymentMethod}');
       }
-      
+
       setState(() {
         _monthlyExpense = monthlyExpense;
         _recentTransactions = recentTransactions;
         _isLoading = false;
       });
-      
+
       print('🏠 انتهاء تحميل البيانات بنجاح');
     } catch (e) {
       print('🏠 خطأ في تحميل البيانات: $e');
@@ -260,11 +263,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Colors.grey,
                       ),
                       const SizedBox(height: 12),
-                      Text(tr.noTransactionsYet, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                      Text(tr.noTransactionsYet,
+                          style: const TextStyle(
+                              fontSize: 14, color: Colors.grey)),
                       const SizedBox(height: 8),
                       ElevatedButton(
                         onPressed: () {
-                          print('🔄 إعادة تحميل البيانات من زر "لا توجد حركات"');
+                          print(
+                              '🔄 إعادة تحميل البيانات من زر "لا توجد حركات"');
                           _loadData();
                         },
                         child: Text(tr.update),
@@ -274,14 +280,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               )
             else
-              ...(_recentTransactions.map((transaction) => _buildTransactionItem(transaction, tr))),
+              ...(_recentTransactions.map(
+                  (transaction) => _buildTransactionItem(transaction, tr))),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTransactionItem(model.Transaction transaction, AppLocalizations tr) {
+  Widget _buildTransactionItem(
+      model.Transaction transaction, AppLocalizations tr) {
     final currency = tr.currency.isNotEmpty ? tr.currency : 'ريال';
     final formatter = NumberFormat.currency(
       locale: 'ar',
@@ -295,7 +303,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Show notes for "آخر" category or when notes exist
     final hasNotes = transaction.notes != null && transaction.notes!.isNotEmpty;
-    final shouldHighlightNotes = transaction.entity == 'آخر' || transaction.type == 'متنوع';
+    final shouldHighlightNotes =
+        transaction.entity == 'آخر' || transaction.type == 'متنوع';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -369,25 +378,29 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          
+
           // Notes section
           if (hasNotes)
             Container(
               margin: const EdgeInsets.only(top: 8),
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: shouldHighlightNotes ? Colors.amber.shade50 : Colors.grey.shade50,
+                color: shouldHighlightNotes
+                    ? Colors.amber.shade50
+                    : Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(6),
-                border: shouldHighlightNotes 
-                  ? Border.all(color: Colors.amber.shade200)
-                  : Border.all(color: Colors.grey.shade200),
+                border: shouldHighlightNotes
+                    ? Border.all(color: Colors.amber.shade200)
+                    : Border.all(color: Colors.grey.shade200),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.note_alt,
                     size: 14,
-                    color: shouldHighlightNotes ? Colors.amber.shade700 : Colors.grey.shade600,
+                    color: shouldHighlightNotes
+                        ? Colors.amber.shade700
+                        : Colors.grey.shade600,
                   ),
                   const SizedBox(width: 6),
                   Expanded(
@@ -395,7 +408,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       transaction.notes!,
                       style: TextStyle(
                         fontSize: 11,
-                        color: shouldHighlightNotes ? Colors.amber.shade800 : Colors.grey.shade700,
+                        color: shouldHighlightNotes
+                            ? Colors.amber.shade800
+                            : Colors.grey.shade700,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -419,4 +434,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-} 
+}

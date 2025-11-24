@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:exoda/l10n/app_localizations.dart';
 
 class MapEntitiesScreen extends StatefulWidget {
   final List<String> unknownEntities;
@@ -21,7 +21,12 @@ class _MapEntitiesScreenState extends State<MapEntitiesScreen> {
   @override
   void initState() {
     super.initState();
-    entityMapping = { for (var e in widget.unknownEntities) e: widget.availableEntities.isNotEmpty ? widget.availableEntities.first : '' };
+    entityMapping = {
+      for (var e in widget.unknownEntities)
+        e: widget.availableEntities.isNotEmpty
+            ? widget.availableEntities.first
+            : ''
+    };
   }
 
   @override
@@ -37,7 +42,9 @@ class _MapEntitiesScreenState extends State<MapEntitiesScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(tr.pleaseSelectEntity, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(tr.pleaseSelectEntity,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             Expanded(
               child: ListView.separated(
@@ -47,11 +54,16 @@ class _MapEntitiesScreenState extends State<MapEntitiesScreen> {
                   final unknown = widget.unknownEntities[index];
                   return Row(
                     children: [
-                      Expanded(child: Text(unknown, style: const TextStyle(fontSize: 16))),
+                      Expanded(
+                          child: Text(unknown,
+                              style: const TextStyle(fontSize: 16))),
                       const SizedBox(width: 16),
                       DropdownButton<String>(
                         value: entityMapping[unknown],
-                        items: widget.availableEntities.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                        items: widget.availableEntities
+                            .map((e) =>
+                                DropdownMenuItem(value: e, child: Text(e)))
+                            .toList(),
                         onChanged: (value) {
                           setState(() {
                             entityMapping[unknown] = value ?? '';
@@ -77,7 +89,8 @@ class _MapEntitiesScreenState extends State<MapEntitiesScreen> {
                       }
                       Navigator.of(context).pop(entityMapping);
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.teal),
                     child: Text(tr.confirm),
                   ),
                 ),
@@ -88,4 +101,4 @@ class _MapEntitiesScreenState extends State<MapEntitiesScreen> {
       ),
     );
   }
-} 
+}
