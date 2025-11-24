@@ -281,4 +281,6 @@ flutter build apk
 
 ---
 
-**طُور بحب في الكويت 🇰🇼**
+**طُور بحب في سوريا 🇸🇾**
+mashhourmd@gmail.com 
+Eng: Machhour Darwich
