@@ -102,6 +102,8 @@ class _StartupScreenState extends State<StartupScreen> {
         // تعيين كملف افتراضي
         await _fileManager.setDefaultFile(fileInfo.id!);
 
+        DatabaseService.initialLanguage = result['language'];
+
         // إنشاء قاعدة بيانات جديدة للملف
         await _databaseService.switchToFile(fileInfo.fileName);
 

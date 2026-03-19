@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'screens/startup_screen.dart';
 
 void main() {
@@ -42,7 +43,7 @@ class _MyAppState extends State<MyApp> {
       ],
       theme: ThemeData(
         primarySwatch: Colors.teal,
-        fontFamily: 'Amiri',
+        textTheme: GoogleFonts.amiriTextTheme(),
         useMaterial3: true,
       ),
       home: StartupScreen(onLanguageChange: _changeLanguage),

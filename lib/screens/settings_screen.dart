@@ -286,8 +286,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       widget.onDataChanged?.call();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تم التبديل إلى الملف بنجاح'),
+        SnackBar(
+          content: Text(_currentLanguage == 'ar' ? 'تم التبديل إلى الملف بنجاح' : 'Switched to file successfully'),
           backgroundColor: Colors.green,
         ),
       );
@@ -307,21 +307,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
           password: result['password'],
         );
 
+        DatabaseService.initialLanguage = result['language'];
+
         // التبديل إلى الملف الجديد
         await _databaseService.switchToFile(fileInfo.fileName);
 
         widget.onDataChanged?.call();
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم إنشاء الملف الجديد بنجاح'),
+          SnackBar(
+            content: Text(_currentLanguage == 'ar' ? 'تم إنشاء الملف الجديد بنجاح' : 'New file created successfully'),
             backgroundColor: Colors.green,
           ),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('خطأ في إنشاء الملف: $e'),
+            content: Text(_currentLanguage == 'ar' ? 'خطأ في إنشاء الملف: $e' : 'Error creating file: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -339,8 +341,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     widget.onLanguageChange(Locale(languageCode));
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('تم تغيير اللغة'),
+      SnackBar(
+        content: Text(_currentLanguage == 'ar' ? 'تم تغيير اللغة' : 'Language changed'),
         backgroundColor: Colors.green,
       ),
     );
@@ -1053,7 +1055,7 @@ class _EntitiesManagementScreenState extends State<EntitiesManagementScreen> {
           ElevatedButton(
             onPressed: () async {
               if (nameController.text.trim().isEmpty) return;
-              await _databaseService.insertEntity(
+              await _databaseService.updateEntity(
                   entity.copyWith(name: nameController.text.trim()));
               Navigator.pop(context);
               _loadEntities();
@@ -1131,119 +1133,6 @@ class _EntitiesManagementScreenState extends State<EntitiesManagementScreen> {
   }
 }
 
-// شاشة إدارة الأنواع
-class _TypesManagementScreen extends StatefulWidget {
-  final DatabaseService databaseService;
-
-  const _TypesManagementScreen({
-    required this.databaseService,
-  });
-
-  @override
-  State<_TypesManagementScreen> createState() => _TypesManagementScreenState();
-}
-
-class _TypesManagementScreenState extends State<_TypesManagementScreen> {
-  List<ExpenseType> _types = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadTypes();
-  }
-
-  Future<void> _loadTypes() async {
-    try {
-      final types = await widget.databaseService.getExpenseTypes();
-      setState(() {
-        _types = types;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('خطأ في تحميل الأنواع: $e')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('إدارة أنواع المصاريف'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _addType,
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: _types.length,
-              itemBuilder: (context, index) {
-                final type = _types[index];
-                return ListTile(
-                  title: Text(type.name),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => _deleteType(type),
-                  ),
-                );
-              },
-            ),
-    );
-  }
-
-  void _addType() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('إضافة نوع جديد'),
-        content: const Text('سيتم إضافة هذه الميزة قريباً'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('موافق'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _deleteType(ExpenseType type) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('حذف النوع'),
-        content: Text('هل تريد حذف "${type.name}"؟'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                await widget.databaseService.deleteExpenseType(type.id!);
-                _loadTypes();
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('خطأ في حذف النوع: $e')),
-                );
-              }
-            },
-            child: const Text('حذف'),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // شاشة إدارة طرق الدفع
 class PaymentMethodsManagementScreen extends StatefulWidget {
@@ -1317,9 +1206,8 @@ class _PaymentMethodsManagementScreenState
           ElevatedButton(
             onPressed: () async {
               if (controller.text.trim().isEmpty) return;
-              await _databaseService.deletePaymentMethod(method);
-              await _databaseService
-                  .insertPaymentMethod(controller.text.trim());
+              await _databaseService.updatePaymentMethod(
+                  method, controller.text.trim());
               Navigator.pop(context);
               _loadMethods();
             },

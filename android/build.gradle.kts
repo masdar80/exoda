@@ -1,3 +1,17 @@
+buildscript {
+    val kotlin_version by extra("1.9.25")
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+        classpath("com.android.tools.build:gradle:8.7.0")
+    }
+}
+
+val kotlin_version by extra("1.9.25")
+
 allprojects {
     repositories {
         google()

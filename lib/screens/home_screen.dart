@@ -161,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildExpenseSummaryCard(AppLocalizations tr) {
-    final currency = tr.currency.isNotEmpty ? tr.currency : 'ريال';
+    final currency = tr.currency.isNotEmpty ? tr.currency : '\$';
     return Card(
       margin: const EdgeInsets.all(12),
       elevation: 2,
@@ -208,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               Text(
-                DateFormat('MMM', 'ar').format(DateTime.now()),
+                DateFormat('MMM', Localizations.localeOf(context).languageCode).format(DateTime.now()),
                 style: const TextStyle(
                   fontSize: 14,
                   color: Colors.white70,

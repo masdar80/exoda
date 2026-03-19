@@ -17,6 +17,7 @@ class DatabaseService {
   DatabaseService._internal();
 
   static Database? _database;
+  static String? initialLanguage;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -111,8 +112,21 @@ class DatabaseService {
       )
     ''');
 
+    // Create budgets table
+    await db.execute('''
+      CREATE TABLE budgets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category TEXT NOT NULL,
+        amount REAL NOT NULL,
+        month INTEGER NOT NULL,
+        year INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        UNIQUE(category, month, year)
+      )
+    ''');
+
     // Insert default data
-    await _insertDefaultData(db);
+    await _insertDefaultData(db, initialLanguage ?? 'ar');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -130,9 +144,13 @@ class DatabaseService {
           is_default INTEGER NOT NULL DEFAULT 0
         )
       ''');
-      if (oldVersion < 4) {
-        // Add budgets table
-        await db.execute('''
+      // Insert default currencies
+      await _insertDefaultCurrencies(db);
+    }
+    
+    if (oldVersion < 4) {
+      // Add budgets table
+      await db.execute('''
         CREATE TABLE IF NOT EXISTS budgets (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           category TEXT NOT NULL,
@@ -143,81 +161,93 @@ class DatabaseService {
           UNIQUE(category, month, year)
         )
       ''');
-        print('تم إضافة جدول الميزانيات');
-      }
-      // Insert default currencies
-      await _insertDefaultCurrencies(db);
+      print('تم إضافة جدول الميزانيات');
     }
   }
 
-  Future<void> _insertDefaultData(Database db) async {
+  Future<void> _insertDefaultData(Database db, [String language = 'ar']) async {
+    String defaultCurrency = 'USD';
+    List<String> paymentMethods = [];
+    List<String> defaultTypes = [];
+    List<String> defaultPaymentEntities = [];
+    List<String> defaultReceiptEntities = [];
+    List<String> supermarketSubcategories = [];
+
+    switch (language) {
+      case 'ar':
+        defaultCurrency = 'SAR';
+        paymentMethods = ['كاش', 'فيزا'];
+        defaultTypes = ['الأسرة', 'الأب', 'الأم', 'الولد الأول', 'الولد الثاني', 'السيارة', 'البناء', 'الجد', 'الجدة', 'متنوع'];
+        defaultPaymentEntities = ['سوبر ماركت', 'مطعم', 'ملابس', 'مواصلات', 'فواتير', 'صيدلية', 'مستشفى', 'تعليم', 'ترفيه', 'آخر'];
+        defaultReceiptEntities = ['راتب شهري', 'سلفة على الراتب', 'أجر عمل', 'هدية', 'عيدية', 'آخر'];
+        supermarketSubcategories = ['كارفور', 'لولو', 'نيستو'];
+        break;
+      case 'en':
+        defaultCurrency = 'USD';
+        paymentMethods = ['Cash', 'Credit Card'];
+        defaultTypes = ['Family', 'Father', 'Mother', 'First Child', 'Second Child', 'Car', 'Home', 'Grandfather', 'Grandmother', 'Miscellaneous'];
+        defaultPaymentEntities = ['Supermarket', 'Restaurant', 'Clothes', 'Transport', 'Bills', 'Pharmacy', 'Hospital', 'Education', 'Entertainment', 'Other'];
+        defaultReceiptEntities = ['Monthly Salary', 'Salary Advance', 'Work Wage', 'Gift', 'Eid Gift', 'Other'];
+        supermarketSubcategories = ['Carrefour', 'Lulu', 'Nesto'];
+        break;
+      case 'es':
+        defaultCurrency = 'EUR';
+        paymentMethods = ['Efectivo', 'Tarjeta de crédito'];
+        defaultTypes = ['Familia', 'Padre', 'Madre', 'Primer hijo', 'Segundo hijo', 'Coche', 'Hogar', 'Abuelo', 'Abuela', 'Varios'];
+        defaultPaymentEntities = ['Supermercado', 'Restaurante', 'Ropa', 'Transporte', 'Facturas', 'Farmacia', 'Hospital', 'Educación', 'Entretenimiento', 'Otro'];
+        defaultReceiptEntities = ['Salario mensual', 'Anticipo de salario', 'Salario de trabajo', 'Regalo', 'Aguinaldo', 'Otro'];
+        supermarketSubcategories = ['Carrefour', 'Lulu', 'Nesto'];
+        break;
+      case 'el':
+        defaultCurrency = 'EUR';
+        paymentMethods = ['Μετρητά', 'Πιστωτική κάρτα'];
+        defaultTypes = ['Οικογένεια', 'Πατέρας', 'Μητέρα', 'Πρώτο Παιδί', 'Δεύτερο Παιδί', 'Αυτοκίνητο', 'Σπίτι', 'Παππούς', 'Γιαγιά', 'Διάφορα'];
+        defaultPaymentEntities = ['Σούπερ μάρκετ', 'Εστιατόριο', 'Ρούχα', 'Μεταφορές', 'Λογαριασμοί', 'Φαρμακείο', 'Νοσοκομείο', 'Εκπαίδευση', 'Ψυχαγωγία', 'Άλλο'];
+        defaultReceiptEntities = ['Μηνιαίος μισθός', 'Προκαταβολή μισθού', 'Ημερομίσθιο', 'Δώρο', 'Δώρο εορτών', 'Άλλο'];
+        supermarketSubcategories = ['Carrefour', 'Lulu', 'Nesto'];
+        break;
+      default:
+        defaultCurrency = 'USD';
+        paymentMethods = ['Cash', 'Credit Card'];
+        defaultTypes = ['Family', 'Father', 'Mother', 'First Child', 'Second Child', 'Car', 'Home', 'Grandfather', 'Grandmother', 'Miscellaneous'];
+        defaultPaymentEntities = ['Supermarket', 'Restaurant', 'Clothes', 'Transport', 'Bills', 'Pharmacy', 'Hospital', 'Education', 'Entertainment', 'Other'];
+        defaultReceiptEntities = ['Monthly Salary', 'Salary Advance', 'Work Wage', 'Gift', 'Eid Gift', 'Other'];
+        supermarketSubcategories = ['Carrefour', 'Lulu', 'Nesto'];
+    }
+
     // Insert default payment methods
-    await db.insert('payment_methods', {'name': 'كاش'});
-    await db.insert('payment_methods', {'name': 'فيزا'});
+    for (String method in paymentMethods) {
+      await db.insert('payment_methods', {'name': method});
+    }
 
     // Insert default expense types
-    final defaultTypes = [
-      'الأسرة',
-      'الأب',
-      'الأم',
-      'الولد الأول',
-      'الولد الثاني',
-      'السيارة',
-      'البناء',
-      'الجد',
-      'الجدة',
-      'متنوع'
-    ];
     for (String type in defaultTypes) {
       await db.insert('expense_types', {'name': type});
     }
 
     // Insert default payment entities
-    final defaultPaymentEntities = [
-      'سوبر ماركت',
-      'مطعم',
-      'ملابس',
-      'مواصلات',
-      'فواتير',
-      'صيدلية',
-      'مستشفى',
-      'تعليم',
-      'ترفيه',
-      'آخر'
-    ];
     for (String entity in defaultPaymentEntities) {
-      await db.insert(
-          'entities', {'name': entity, 'type': 'payment', 'isSubcategory': 0});
+      await db.insert('entities', {'name': entity, 'type': 'payment', 'isSubcategory': 0});
     }
 
     // Insert default receipt entities
-    final defaultReceiptEntities = [
-      'راتب شهري',
-      'سلفة على الراتب',
-      'أجر عمل',
-      'هدية',
-      'عيدية',
-      'آخر'
-    ];
     for (String entity in defaultReceiptEntities) {
-      await db.insert(
-          'entities', {'name': entity, 'type': 'receipt', 'isSubcategory': 0});
+      await db.insert('entities', {'name': entity, 'type': 'receipt', 'isSubcategory': 0});
     }
 
     // Insert subcategories for supermarket
-    final supermarketSubcategories = ['كارفور', 'لولو', 'نيستو'];
     for (String subcategory in supermarketSubcategories) {
       await db.insert('entities', {
         'name': subcategory,
         'type': 'payment',
-        'parentId': 'سوبر ماركت',
+        'parentId': defaultPaymentEntities.first,
         'isSubcategory': 1
       });
     }
 
     // Insert default settings
-    await db.insert('settings', {'key': 'language', 'value': 'ar'});
-    await db.insert('settings', {'key': 'currency', 'value': 'SAR'});
+    await db.insert('settings', {'key': 'language', 'value': language});
+    await db.insert('settings', {'key': 'currency', 'value': defaultCurrency});
     await db.insert('settings', {'key': 'app_version', 'value': '1.0.0'});
 
     // Insert default currencies
@@ -538,6 +568,16 @@ class DatabaseService {
     return await db.delete('entities', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<int> updateEntity(Entity entity) async {
+    final db = await database;
+    return await db.update(
+      'entities',
+      entity.toMap(),
+      where: 'id = ?',
+      whereArgs: [entity.id],
+    );
+  }
+
   // ExpenseType operations
   Future<int> insertExpenseType(ExpenseType expenseType) async {
     final db = await database;
@@ -667,6 +707,26 @@ class DatabaseService {
   Future<int> insertPaymentMethod(String name) async {
     final db = await database;
     return await db.insert('payment_methods', {'name': name});
+  }
+
+  Future<void> updatePaymentMethod(String oldName, String newName) async {
+    final db = await database;
+    
+    await db.transaction((txn) async {
+      await txn.update(
+        'payment_methods',
+        {'name': newName},
+        where: 'name = ?',
+        whereArgs: [oldName],
+      );
+      
+      await txn.update(
+        'transactions',
+        {'paymentMethod': newName},
+        where: 'paymentMethod = ?',
+        whereArgs: [oldName],
+      );
+    });
   }
 
   Future<int> deletePaymentMethod(String name) async {

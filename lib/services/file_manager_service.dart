@@ -2,6 +2,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/file_info.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 
 class FileManagerService {
   static final FileManagerService _instance = FileManagerService._internal();
@@ -10,6 +12,12 @@ class FileManagerService {
 
   static Database? _metaDatabase;
   static String? _currentFileName;
+
+  String _hashPassword(String password) {
+    final bytes = utf8.encode(password);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
 
   // قاعدة البيانات الرئيسية لحفظ معلومات الملفات
   Future<Database> get metaDatabase async {
@@ -59,7 +67,7 @@ class FileManagerService {
     final fileInfo = FileInfo(
       name: name,
       fileName: fileName,
-      password: password,
+      password: password != null ? _hashPassword(password) : null,
       createdAt: now,
       lastAccessed: now,
     );
@@ -147,7 +155,8 @@ class FileManagerService {
     if (!fileInfo.hasPassword) return true;
     
     // التحقق من كلمة المرور
-    return fileInfo.password == inputPassword;
+    if (inputPassword == null) return false;
+    return fileInfo.password == _hashPassword(inputPassword);
   }
 
   // الحصول على مسار ملف قاعدة البيانات
